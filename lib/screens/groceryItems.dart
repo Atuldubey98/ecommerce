@@ -1,4 +1,3 @@
-import 'package:ecommerceapp/bloc/incrementbloc.dart';
 import 'package:ecommerceapp/models/cart.dart';
 import 'package:ecommerceapp/models/grocery.dart';
 import 'package:ecommerceapp/screens/singlegroceryitem.dart';
@@ -6,18 +5,34 @@ import 'package:ecommerceapp/widgets/primarywidget.dart';
 
 import 'package:flutter/material.dart';
 
-class GroceryScreen extends StatelessWidget {
+class GroceryScreen extends StatefulWidget {
   final List<GroceryModel> groceryModel;
+  final Function callbackfunction;
+  GroceryScreen(this.groceryModel, this.callbackfunction);
 
-  GroceryScreen(this.groceryModel);
+  @override
+  _GroceryScreenState createState() => _GroceryScreenState();
+}
+
+class _GroceryScreenState extends State<GroceryScreen> {
+  Map<String, GroceryModel> groceryData = Map();
+  List<String> keysItem = List();
+  void generate() {
+    widget.groceryModel.forEach((element) {
+      groceryData[element.id] = element;
+    });
+    keysItem = groceryData.keys.toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    generate();
     return Scaffold(
         appBar: buildAppBar("Grocery", true),
         body: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           itemBuilder: (context, index) {
+            GroceryModel groceryModel = groceryData[keysItem[index]];
             return Container(
               padding: EdgeInsets.all(20),
               child: Column(
@@ -30,7 +45,7 @@ class GroceryScreen extends StatelessWidget {
                         width: 200,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          groceryModel[index].title,
+                          groceryModel.title,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -43,7 +58,7 @@ class GroceryScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => GroceryOneItem(
-                                groceryModel: groceryModel[index],
+                                groceryModel: groceryModel,
                               ),
                             ),
                           );
@@ -76,7 +91,7 @@ class GroceryScreen extends StatelessWidget {
                     child: Row(
                       children: <Widget>[
                         Text(
-                          groceryModel[index].rating.toString(),
+                          groceryModel.rating.toString(),
                           style: TextStyle(
                             fontSize: 20,
                           ),
@@ -95,7 +110,7 @@ class GroceryScreen extends StatelessWidget {
                     height: 20,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Rs." + groceryModel[index].price,
+                      "Rs." + groceryModel.price.toString(),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -109,7 +124,7 @@ class GroceryScreen extends StatelessWidget {
                         height: 20,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Type : " + groceryModel[index].type,
+                          "Type : " + groceryModel.type,
                           style: TextStyle(
                             fontSize: 20,
                           ),
@@ -121,17 +136,23 @@ class GroceryScreen extends StatelessWidget {
                             IconButton(
                                 icon: Icon(Icons.plus_one),
                                 onPressed: () {
-                                  cartIncrement.cartSink(CartItem(
-                                      groceryModel[index].filename,
+                                  final CartItem cartItem = CartItem(
+                                      groceryData[keysItem[index]].id,
                                       1,
-                                      groceryModel[index].type));
-                                  print(groceryModel[index].title);
+                                      groceryData[keysItem[index]].title);
+                                  widget.callbackfunction(cartItem);
+                                  setState(() {
+                                    groceryData[keysItem[index]].qty++;
+                                  });
                                 }),
                             Container(
-                              padding:
-                                  EdgeInsets.only(left: 10, right: 10, top: 2),
+                              padding: EdgeInsets.only(
+                                left: 10,
+                                right: 10,
+                                top: 2,
+                              ),
                               child: Text(
-                                "0",
+                                groceryData[keysItem[index]].qty.toString(),
                                 style: TextStyle(color: Colors.white),
                               ),
                               decoration: BoxDecoration(
@@ -141,7 +162,13 @@ class GroceryScreen extends StatelessWidget {
                             ),
                             IconButton(
                                 icon: Icon(Icons.delete_outline),
-                                onPressed: () {})
+                                onPressed: () {
+                                  if (groceryData[keysItem[index]].qty > 0) {
+                                    setState(() {
+                                      groceryData[keysItem[index]].qty++;
+                                    });
+                                  }
+                                })
                           ],
                         ),
                       ),
@@ -152,7 +179,7 @@ class GroceryScreen extends StatelessWidget {
               ),
             );
           },
-          itemCount: groceryModel.length,
+          itemCount: widget.groceryModel.length,
         ));
   }
 }

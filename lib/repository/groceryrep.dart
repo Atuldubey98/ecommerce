@@ -18,12 +18,14 @@ class GetGroceryRepository implements GetGroceryList {
       return "Down";
     }
     final jsonData = json.decode(response.body);
+    print(jsonData);
     jsonData['data'].forEach((ele) {
       final GroceryModel _groceryModel = GroceryModel(
+          id: ele['id'].toString(),
           description: ele['description'],
           title: ele['title'],
           height: ele['height'].toString(),
-          price: ele['price'].toString(),
+          price: ele['price'],
           rating: ele['rating'],
           type: ele['type'],
           width: ele['width'].toString());

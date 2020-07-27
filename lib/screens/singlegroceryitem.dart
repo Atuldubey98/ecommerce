@@ -41,8 +41,8 @@ class GroceryOneItem extends StatelessWidget {
               ),
             ),
             buildSizedBox(20, 0),
-            buildContainerforText("Rs. " + groceryModel.price, 0, 0, 20,
-                Alignment.centerLeft, FontWeight.bold),
+            buildContainerforText("Rs. " + groceryModel.price.toString(), 0, 0,
+                20, Alignment.centerLeft, FontWeight.bold),
             buildContainerforText("Type: " + groceryModel.type, 0, 0, 20,
                 Alignment.centerLeft, FontWeight.normal),
             Divider()

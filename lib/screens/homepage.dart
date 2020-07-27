@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:ecommerceapp/bloc/shop_bloc.dart';
+import 'package:ecommerceapp/models/cart.dart';
 import 'package:ecommerceapp/screens/cartscreen.dart';
 import 'package:ecommerceapp/screens/groceryItems.dart';
 import 'package:ecommerceapp/screens/nokiascreen.dart';
 import 'package:ecommerceapp/screens/springscreen.dart';
+import 'package:ecommerceapp/utils/alllinks.dart';
 import 'package:ecommerceapp/widgets/primarywidget.dart';
 import 'package:ecommerceapp/widgets/secondarywidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_socket_io/flutter_socket_io.dart';
+import '../models/userdata.dart';
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -15,17 +21,38 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController searchControler = new TextEditingController();
-
+  SocketIO socketIO;
   @override
   void dispose() {
     searchControler.dispose();
+    socketIO.unSubscribesAll();
     super.dispose();
+  }
+
+  putItemtocart(CartItem cartItem) {
+    socketIO.sendMessage(
+      "addtocart",
+      json.encode(
+        {
+          "uniqueid": userData.id,
+          "title": cartItem.title,
+          "itemid": cartItem.id
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
+    this.socketIO = Utils.getSocketIO((data) {
+      debugPrint(data.toString());
+    });
+    socketIO.subscribe(userData.id, (data) {
+      final response = json.decode(data.body);
+      print(response);
+    });
 
     return Scaffold(
       body: BlocConsumer<ShopBloc, ShopState>(
@@ -36,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
               child: CircularProgressIndicator(),
             );
           } else if (state is GroceryLoaded) {
-            return GroceryScreen(state.groceryList);
+            return GroceryScreen(state.groceryList, putItemtocart);
           } else if (state is NokiaLoaded) {
             return NokiaScreen(nokiaList: state.nokiaList);
           } else if (state is SpringLoaded) {
@@ -143,7 +170,8 @@ class _DropDownWidgetState extends State<DropDownWidget> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                "Grocery",
+                "Select",
+                style: TextStyle(color: Colors.grey),
               ),
             ),
             value: 1,
@@ -151,37 +179,46 @@ class _DropDownWidgetState extends State<DropDownWidget> {
           DropdownMenuItem(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text("Spring"),
+              child: Text(
+                "Grocery",
+              ),
             ),
             value: 2,
+          ),
+          DropdownMenuItem(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("Spring"),
+            ),
+            value: 3,
           ),
           DropdownMenuItem(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text("Nokia"),
               ),
-              value: 3),
+              value: 4),
           DropdownMenuItem(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text("Hello"),
               ),
-              value: 4),
+              value: 5),
         ],
         onChanged: (int setvalue) {
-          if (setvalue == 3) {
+          if (setvalue == 4) {
             BlocProvider.of<ShopBloc>(context)
               ..add(
                 GetNokia(),
               );
           }
-          if (setvalue == 1) {
+          if (setvalue == 2) {
             BlocProvider.of<ShopBloc>(context)
               ..add(
                 GetGrocery(),
               );
           }
-          if (setvalue == 2) {
+          if (setvalue == 3) {
             BlocProvider.of<ShopBloc>(context)
               ..add(
                 GetSpring(),

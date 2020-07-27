@@ -63,6 +63,19 @@ Drawer buildDrawer() {
   );
 }
 
+InputDecoration simpleInputDecoration(String item) {
+  return InputDecoration(
+    contentPadding: EdgeInsets.all(8),
+    hintText: item,
+    hintStyle: TextStyle(fontSize: 20),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.all(
+        Radius.circular(20),
+      ),
+    ),
+  );
+}
+
 TextField buildTextField(TextEditingController controller, String item) {
   return TextField(
     controller: controller,
